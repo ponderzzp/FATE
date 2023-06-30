@@ -58,6 +58,7 @@ class HeteroDecisionTreeHost(DecisionTree):
 
         # gh_compress
         self.run_gh_compressing = False
+        self.compress_method = 'Deflate'
 
     """
     Setting
@@ -81,7 +82,9 @@ class HeteroDecisionTreeHost(DecisionTree):
              goss_subsample=False,
              cipher_compressing=False,
              new_ver=True,
-             mo_tree=False
+             mo_tree=False,
+             gh_compressing=False,
+             compress_method='Deflate'
              ):
 
         super(HeteroDecisionTreeHost, self).init_data_and_variable(flowid, runtime_idx, data_bin, bin_split_points,
@@ -95,6 +98,8 @@ class HeteroDecisionTreeHost(DecisionTree):
         self.feature_num = self.bin_split_points.shape[0]
         self.new_ver = new_ver
         self.mo_tree = mo_tree
+        self.run_gh_compressing = gh_compressing # gh_compress bool type, default is False
+        self.compress_method = compress_method # en_grad_hess compress method, default is 'Deflate'
 
         self.report_init_status()
 
@@ -218,7 +223,7 @@ class HeteroDecisionTreeHost(DecisionTree):
         self.grad_and_hess = self.transfer_inst.encrypted_grad_and_hess.get(idx=0)
 
         if self.run_gh_compressing:
-            gh_compressor = BytesCompress()
+            gh_compressor = BytesCompress(compression_algorithm=self.compress_method)
             self.grad_and_hess = gh_compressor.uncompress(self.grad_and_hess)
             self.grad_and_hess = pickle.loads(self.grad_and_hess)
             self.grad_and_hess = session.parallelize(self.grad_and_hess, include_key=True, partition=self.data_bin.partitions)

@@ -52,6 +52,10 @@ class HeteroSecureBoostingTreeHost(HeteroBoostingHost):
         self.EINI_random_mask = False
         self.EINI_complexity_check = False
 
+        # gh_compress
+        self.gh_compressing = False
+        self.compress_method = 'Deflate'
+
         self.multi_mode = consts.SINGLE_OUTPUT
 
         self.hetero_sbt_transfer_variable = HeteroSecureBoostTransferVariable()
@@ -76,6 +80,8 @@ class HeteroSecureBoostingTreeHost(HeteroBoostingHost):
         self.EINI_inference = param.EINI_inference
         self.EINI_random_mask = param.EINI_random_mask
         self.EINI_complexity_check = param.EINI_complexity_check
+        self.gh_compressing = param.gh_compress # gh_compress bool type, default is False
+        self.compress_method = param.compress_method # en_grad_hess compress method, default is 'Deflate'
 
         if self.use_missing:
             self.tree_param.use_missing = self.use_missing
@@ -157,7 +163,8 @@ class HeteroSecureBoostingTreeHost(HeteroBoostingHost):
                                            complete_secure=complete_secure,
                                            fast_sbt=fast_sbt, tree_type=tree_type, target_host_id=target_host_id,
                                            guest_depth=self.guest_depth, host_depth=self.host_depth,
-                                           mo_tree=(self.multi_mode == consts.MULTI_OUTPUT), bin_num=self.bin_num
+                                           mo_tree=(self.multi_mode == consts.MULTI_OUTPUT), bin_num=self.bin_num,
+                                           gh_compress = self.gh_compressing, compress_method = self.compress_method
                                            )
         tree.fit()
         self.update_feature_importance(tree.get_feature_importance())

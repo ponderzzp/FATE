@@ -558,7 +558,7 @@ class HeteroSecureBoostParam(HeteroBoostingParam):
                  cipher_compress_error=None, cipher_compress=True, new_ver=True, boosting_strategy=consts.STD_TREE,
                  work_mode=None, tree_num_per_party=1, guest_depth=2, host_depth=3, callback_param=CallbackParam(),
                  multi_mode=consts.SINGLE_OUTPUT, EINI_inference=False, EINI_random_mask=False,
-                 EINI_complexity_check=False):
+                 EINI_complexity_check=False, gh_compress=False, compress_method='Deflate'):
 
         super(HeteroSecureBoostParam, self).__init__(task_type, objective_param, learning_rate, num_trees,
                                                      subsample_feature_rate, n_iter_no_change, tol, encrypt_param,
@@ -589,6 +589,8 @@ class HeteroSecureBoostParam(HeteroBoostingParam):
         self.host_depth = host_depth
         self.callback_param = copy.deepcopy(callback_param)
         self.multi_mode = multi_mode
+        self.gh_compress = gh_compress # gh_compress bool type, default is False
+        self.compress_method = compress_method # en_grad_hess compress method, default is 'Deflate'
 
     def check(self):
 

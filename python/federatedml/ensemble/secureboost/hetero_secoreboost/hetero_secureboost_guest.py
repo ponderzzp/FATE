@@ -65,6 +65,10 @@ class HeteroSecureBoostingTreeGuest(HeteroBoostingGuest):
         self.EINI_inference = False
         self.EINI_random_mask = False
 
+        # gh_compress
+        self.gh_compressing = False
+        self.compress_method = 'Deflate'
+
     def _init_model(self, param: HeteroSecureBoostParam):
 
         super(HeteroSecureBoostingTreeGuest, self)._init_model(param)
@@ -79,6 +83,8 @@ class HeteroSecureBoostingTreeGuest(HeteroBoostingGuest):
         self.new_ver = param.new_ver
         self.EINI_inference = param.EINI_inference
         self.EINI_random_mask = param.EINI_random_mask
+        self.gh_compressing = param.gh_compress # gh_compress bool type, default is False
+        self.compress_method = param.compress_method # en_grad_hess compress method, default is 'Deflate'
 
         # fast sbt param
         self.tree_num_per_party = param.tree_num_per_party
@@ -242,6 +248,7 @@ class HeteroSecureBoostingTreeGuest(HeteroBoostingGuest):
                                            fast_sbt=fast_sbt, tree_type=tree_type, target_host_id=target_host_id,
                                            guest_depth=self.guest_depth, host_depth=self.host_depth,
                                            mo_tree=(self.multi_mode == consts.MULTI_OUTPUT),
+                                           gh_compress = self.gh_compressing, compress_method = self.compress_method,
                                            class_num=len(self.classes_) if len(self.classes_) > 2 else 1  # mo parameter
                                            )
 

@@ -52,6 +52,7 @@ class HeteroDecisionTreeGuest(DecisionTree):
 
         # gh_compress
         self.run_gh_compressing = False
+        self.compress_method = 'Deflate'
 
     """
     Node Encode/ Decode
@@ -124,7 +125,9 @@ class HeteroDecisionTreeGuest(DecisionTree):
              cipher_compressing=False,
              max_sample_weight=1,
              new_ver=True,
-             mo_tree=False
+             mo_tree=False,
+             gh_compressing=False,
+             compress_method='Deflate'
              ):
 
         super(HeteroDecisionTreeGuest, self).init_data_and_variable(flowid, runtime_idx, data_bin, bin_split_points,
@@ -140,6 +143,8 @@ class HeteroDecisionTreeGuest(DecisionTree):
         self.max_sample_weight = max_sample_weight
         self.task_type = task_type
         self.mo_tree = mo_tree
+        self.run_gh_compressing = gh_compressing # gh_compress bool type, default is False
+        self.compress_method = compress_method # en_grad_hess compress method, default is 'Deflate'
         if self.mo_tree:  # when mo mode is activated, need class number
             self.class_num = class_num
         else:
@@ -382,7 +387,7 @@ class HeteroDecisionTreeGuest(DecisionTree):
         if self.run_gh_compressing:
             en_grad_hess_collect = list(en_grad_hess.collect())
             en_grad_hess = pickle.dumps(en_grad_hess_collect)
-            gh_compressor = BytesCompress()
+            gh_compressor = BytesCompress(compression_algorithm=self.compress_method)
             en_grad_hess = gh_compressor.compress(en_grad_hess)
 
         LOGGER.info('sending g/h to host')
