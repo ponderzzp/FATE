@@ -1,3 +1,4 @@
+import pickle
 import copy
 import functools
 from fate_arch.session import computing_session as session
@@ -12,6 +13,7 @@ from federatedml.transfer_variable.transfer_class.hetero_decision_tree_transfer_
 from federatedml.ensemble.basic_algorithms.decision_tree.tree_core.g_h_optim import GHPacker
 from federatedml.statistic.statics import MultivariateStatisticalSummary
 from federatedml.util import consts
+from federatedml.fate_compress.Bytes_compress import BytesCompress
 
 
 class HeteroDecisionTreeGuest(DecisionTree):
@@ -47,6 +49,9 @@ class HeteroDecisionTreeGuest(DecisionTree):
         # mo tree
         self.mo_tree = False
         self.class_num = 1
+
+        # gh_compress
+        self.run_gh_compressing = False
 
     """
     Node Encode/ Decode
@@ -373,6 +378,12 @@ class HeteroDecisionTreeGuest(DecisionTree):
 
         else:
             en_grad_hess = self.encrypter.distribute_encrypt(self.grad_and_hess)
+
+        if self.run_gh_compressing:
+            en_grad_hess_collect = list(en_grad_hess.collect())
+            en_grad_hess = pickle.dumps(en_grad_hess_collect)
+            gh_compressor = BytesCompress()
+            en_grad_hess = gh_compressor.compress(en_grad_hess)
 
         LOGGER.info('sending g/h to host')
         self.transfer_inst.encrypted_grad_and_hess.remote(en_grad_hess,

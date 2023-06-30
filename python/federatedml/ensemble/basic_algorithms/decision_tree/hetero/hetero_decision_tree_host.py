@@ -1,5 +1,7 @@
+import pickle
 import numpy as np
 import functools
+from fate_arch.session import computing_session as session
 from federatedml.ensemble.basic_algorithms.decision_tree.tree_core.node import Node
 from federatedml.util import LOGGER
 from federatedml.protobuf.generated.boosting_tree_model_meta_pb2 import DecisionTreeModelMeta
@@ -10,6 +12,7 @@ from federatedml.transfer_variable.transfer_class.hetero_decision_tree_transfer_
 from federatedml.util import consts
 from federatedml.ensemble.basic_algorithms.decision_tree.tree_core.g_h_optim import PackedGHCompressor
 from federatedml.ensemble.basic_algorithms.decision_tree.tree_core.splitter import SplitInfo
+from federatedml.fate_compress.Bytes_compress import BytesCompress
 
 
 class HeteroDecisionTreeHost(DecisionTree):
@@ -52,6 +55,9 @@ class HeteroDecisionTreeHost(DecisionTree):
 
         # multi mode
         self.mo_tree = False
+
+        # gh_compress
+        self.run_gh_compressing = False
 
     """
     Setting
@@ -210,6 +216,12 @@ class HeteroDecisionTreeHost(DecisionTree):
             self.cipher_compressor = PackedGHCompressor(mo_mode=self.mo_tree)
 
         self.grad_and_hess = self.transfer_inst.encrypted_grad_and_hess.get(idx=0)
+
+        if self.run_gh_compressing:
+            gh_compressor = BytesCompress()
+            self.grad_and_hess = gh_compressor.uncompress(self.grad_and_hess)
+            self.grad_and_hess = pickle.loads(self.grad_and_hess)
+            self.grad_and_hess = session.parallelize(self.grad_and_hess, include_key=True, partition=self.data_bin.partitions)
 
     def sync_node_positions(self, dep=-1):
         LOGGER.info("get tree node queue of depth {}".format(dep))
